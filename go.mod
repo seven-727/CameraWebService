@@ -1,4 +1,4 @@
-module github.com/CameraWebService
+module github.com/seven-727/CameraWebService
 
 go 1.15
 
