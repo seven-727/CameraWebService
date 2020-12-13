@@ -1,0 +1,13 @@
+{
+  "server": {
+    "http_port": ":8083"
+  },
+  "rtsp": {
+    "hikvision-new": {
+      "url": "rtsp://USER:PWD@IP:PORT/Streaming/Channels/CHN01?transportmode=unicast"
+    },
+    "hikvision-old": {
+      "url": "rtsp://USER:PWD@IP:PORT/CODEC/chCHN/main/av_stream"
+    }
+  }
+}

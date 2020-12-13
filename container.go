@@ -16,9 +16,9 @@ import (
 )
 
 // 初始化配置文件
-var path = "../conf/conf.json"
+var path = "config.json"
 var config = loadJSON(path)
-var streams StreamsSt
+var streams = StreamsSt{Streams: make(map[string]StreamST)}
 
 // 读取json文件
 func loadJSON(path string) *ConfigST {
@@ -31,10 +31,6 @@ func loadJSON(path string) *ConfigST {
 	if err != nil {
 		log.Panicln("decode config file failed:", string(buf), err)
 	}
-	log.Println("http port", tmp.Server.HTTPPort)
-	for i, v := range tmp.URL {
-		log.Println(i, v)
-	}
 
 	return &tmp
 }
@@ -43,11 +39,10 @@ func loadJSON(path string) *ConfigST {
 type ConfigST struct {
 	Server ServerST `json:"server"`
 	/*
-		配置的url模板，ip、端口、用户、密码、编码格式、通道
-		用IP/PORT/USER/PASSWORD/CODEC/CHANNEL代替，根据
-		传入参数替换
+		k:rtsp类型 v:rtsp url模板，ip、端口、用户、密码、编码格式、通道
+		用IP/PORT/USER/PWD/CODEC/CHN代替，根据传入参数替换
 	*/
-	URL map[string]string
+	Rtsp map[string]RtspST `json:"rtsp"`
 }
 
 //ServerST struct
@@ -55,35 +50,30 @@ type ServerST struct {
 	HTTPPort string `json:"http_port"`
 }
 
-// list all type(rtsp url)
-func (element *ConfigST) list() (string, []string) {
-	var res []string
-	var first string
-	for k := range element.URL {
-		if first == "" {
-			first = k
-		}
-		res = append(res, k)
-	}
-	return first, res
+//RtspST struct
+type RtspST struct {
+	URL string `json:"url"`
 }
 
 //camera url is exist?
 func (element *ConfigST) ext(url string) bool {
-	_, ok := element.URL[url]
+	_, ok := element.Rtsp[url]
 	return ok
 }
 
 //replace ip,port,user,password
-func (element *ConfigST) formURL(urlType, ip, port, user, password string) (bool, string) {
+func (element *ConfigST) formURL(urlType, ip, port, user, password, chn, codec string) (bool, string) {
 	if !element.ext(urlType) {
 		return false, ""
 	}
-	url := element.URL[urlType]
-	strings.Replace(url, "ip", ip, 1)
-	strings.Replace(url, "port", port, 1)
-	strings.Replace(url, "user", user, 1)
-	strings.Replace(url, "password", password, 1)
+	url := element.Rtsp[urlType].URL
+	url = strings.Replace(url, "IP", ip, 1)
+	url = strings.Replace(url, "PORT", port, 1)
+	url = strings.Replace(url, "USER", user, 1)
+	url = strings.Replace(url, "PWD", password, 1)
+	url = strings.Replace(url, "CHN", chn, 1)
+	url = strings.Replace(url, "CODEC", codec, 1)
+
 	return true, url
 }
 
